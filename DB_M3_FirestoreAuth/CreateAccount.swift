@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseAuth
+import Firebase
 
 struct CreateAccount: View {
     
@@ -64,12 +65,44 @@ struct CreateAccount: View {
                     errorMessage = error!.localizedDescription
                 }
                 else {
+                    
+                    // good account creation - save the first name
+                    saveFirstName()
+                    
                     // good account creation - dismiss the form
+                    
+                    
                     formShowing = false
                 }
             }
-           
         }
+    }
+    
+    func saveFirstName() {
+        
+        // As long as there is a currentUser, proceed
+        if let currentUser = Auth.auth().currentUser {
+            // A pretty sweet way to clean up data input
+            let cleansedFirstName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                let db = Firestore.firestore()
+                
+                // no need to unwrap, checked above with the if let
+                let path = db.collection("users").document(currentUser.uid)
+            
+            // use setDate, instead of updateData.  updateData will fail if it doesn't already exist
+                path.setData(["firstname": cleansedFirstName]) { error in
+                    
+                    // TODO: why is there no result needed, next to the error above "(result, error) in"
+                    
+                    if error == nil {
+                        // Saved successfully!
+                    }
+                    else {
+                        // error
+                        print("setData to firestore failed")
+                    }
+                }
+            }
     }
 }
 
